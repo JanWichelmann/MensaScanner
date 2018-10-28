@@ -63,7 +63,7 @@ namespace MensaScanner
             if(!config.ContainsKey("AccessToken"))
             {
                 // Use authentication code to gain access token
-                Console.WriteLine("Requesting first access token...");
+                Console.WriteLine("Requesting initial access token...");
                 JObject response;
                 IEnumerable<KeyValuePair<string, string>> requestParams = new List<KeyValuePair<string, string>>
                 {
@@ -88,9 +88,41 @@ namespace MensaScanner
                 config["RefreshToken"] = (string)response["refresh_token"];
                 config["RefreshTokenExpires"] = DateTime.Now.AddSeconds(double.Parse((string)response["refresh_token_expires_in"])).ToFileTimeUtc().ToString();
                 SaveConfig(config);
-                Console.WriteLine("Requesting first access token successful.");
+                Console.WriteLine("Requesting initial access token successful.");
             }
-            // TODO refresh token
+
+            // Access token expired?
+            DateTime accessTokenExpires = DateTime.FromFileTimeUtc(long.Parse(config["AccessTokenExpires"]));
+            if(accessTokenExpires < DateTime.Now - new TimeSpan(48, 0, 0)) // Refresh access token two days before it expires
+            {
+                // Request new access token
+                Console.WriteLine("Requesting new access token...");
+                JObject response;
+                IEnumerable<KeyValuePair<string, string>> requestParams = new List<KeyValuePair<string, string>>
+                {
+                       new KeyValuePair<string, string>("grant_type", "refresh_token"),
+                       new KeyValuePair<string, string>("client_id", config["ClientID"]),
+                       new KeyValuePair<string, string>("client_secret", config["ClientSecret"]),
+                       new KeyValuePair<string, string>("refresh_token", config["RefreshToken"]),
+                };
+                using(var httpClient = new HttpClient())
+                using(var htmlForm = new FormUrlEncodedContent(requestParams))
+                {
+                    htmlForm.Headers.Clear();
+                    htmlForm.Headers.Add("Content-Type", "application/x-www-form-urlencoded");
+                    string responseContentRaw = httpClient.PostAsync("https://api.ciscospark.com/v1/access_token", htmlForm).Result.Content.ReadAsStringAsync().Result;
+                    response = JObject.Parse(responseContentRaw);
+                }
+
+                // Extract access token
+                // This also automatically renews the refresh token
+                config["AccessToken"] = (string)response["access_token"];
+                config["AccessTokenExpires"] = DateTime.Now.AddSeconds(double.Parse((string)response["expires_in"])).ToFileTimeUtc().ToString();
+                config["RefreshToken"] = (string)response["refresh_token"];
+                config["RefreshTokenExpires"] = DateTime.Now.AddSeconds(double.Parse((string)response["refresh_token_expires_in"])).ToFileTimeUtc().ToString();
+                SaveConfig(config);
+                Console.WriteLine("Requesting new access token successful.");
+            }
 
             // Retrieve menus
             Console.WriteLine("Retrieving menus...");
