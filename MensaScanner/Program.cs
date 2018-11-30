@@ -93,7 +93,7 @@ namespace MensaScanner
 
             // Access token expired?
             DateTime accessTokenExpires = DateTime.FromFileTimeUtc(long.Parse(config["AccessTokenExpires"]));
-            if(accessTokenExpires < DateTime.Now - new TimeSpan(48, 0, 0)) // Refresh access token two days before it expires
+            if(accessTokenExpires < DateTime.Now + new TimeSpan(48, 0, 0)) // Refresh access token two days before it expires
             {
                 // Request new access token
                 Console.WriteLine("Requesting new access token...");
@@ -233,7 +233,7 @@ namespace MensaScanner
                 columnBounds.Add((m.Index, m.Length));
 
             // Break day menu into cells
-            string[,] dayMenuTable = new string[4, columnBounds.Count]; // Exactly 4 lines (including empty ones)
+            string[,] dayMenuTable = new string[4, columnBounds.Count]; // At most 4 lines
             for(int dayRow = 0; dayRow < 4; ++dayRow)
             {
                 // Split row
@@ -254,10 +254,16 @@ namespace MensaScanner
             // Create menu entries
             for(int c = 0; c < columnBounds.Count; ++c)
             {
+                // Find price line
+                int priceLineNumber = 0;
+                for(; priceLineNumber < dayMenuTable.GetLength(0); ++priceLineNumber)
+                    if(dayMenuTable[priceLineNumber, c].Contains("€"))
+                        break;
+
                 // Concat entry lines
                 string menuEntryName = "";
                 bool first = true;
-                for(int r = 0; r < 3; ++r)
+                for(int r = 0; r < priceLineNumber; ++r)
                     if(dayMenuTable[r, c] != null)
                     {
                         // Comma separate entry lines
@@ -269,7 +275,7 @@ namespace MensaScanner
                     }
 
                 // Convert price cell
-                string menuEntryPrice = Regex.Match(dayMenuTable[3, c], "€.*?/.*?€ *[0-9,]+").Value;
+                string menuEntryPrice = Regex.Match(dayMenuTable[priceLineNumber, c], "€.*?/.*?€ *[0-9,]+").Value;
 
                 // Add menu entry to returned list
                 yield return new MenuEntry { Name = menuEntryName, Price = menuEntryPrice };
