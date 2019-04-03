@@ -257,7 +257,7 @@ namespace MensaScanner
                 // Find price line
                 int priceLineNumber = 0;
                 for(; priceLineNumber < dayMenuTable.GetLength(0); ++priceLineNumber)
-                    if(dayMenuTable[priceLineNumber, c].Contains("€"))
+                    if(dayMenuTable[priceLineNumber, c] != null && dayMenuTable[priceLineNumber, c].Contains("€"))
                         break;
 
                 // Concat entry lines
