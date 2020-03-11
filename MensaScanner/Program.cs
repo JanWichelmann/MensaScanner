@@ -143,7 +143,7 @@ namespace MensaScanner
             StringBuilder message = new StringBuilder();
             message.AppendLine("**Mensa**");
             foreach(var menuEntry in mensaMenu)
-                message.AppendLine($"- {menuEntry.Name}    [{menuEntry.Price}]");
+                message.AppendLine($"- {menuEntry.Name}    [{menuEntry.Price}]    ({menuEntry.Properties})");
             message.AppendLine();
             message.AppendLine("**UKSH Bistro**");
             foreach(var menuEntry in ukshMenu)
