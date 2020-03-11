@@ -18,5 +18,10 @@ namespace MensaScanner
         /// Price information.
         /// </summary>
         public string Price { get; set; }
+        
+        /// <summary>
+        /// Additional information about the food.
+        /// </summary>
+        public string Properties { get; set; }
     }
 }
