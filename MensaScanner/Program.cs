@@ -46,7 +46,7 @@ namespace MensaScanner
         {
             // Load config file
             var config = ReadConfig();
-            
+
             // Need to get authentication code?
             if(!config.ContainsKey("AuthCode"))
             {
@@ -130,8 +130,8 @@ namespace MensaScanner
             Console.WriteLine("MENSA:");
             var mensaMenu = ParseMensa(DateTime.Today);
             foreach(var menuEntry in mensaMenu)
-                Console.WriteLine($"- {menuEntry.Name}    [{menuEntry.Price}]    ({menuEntry.Properties})");
-            
+                Console.WriteLine($"- {menuEntry.Name}    [{menuEntry.Price}; {menuEntry.Properties}]");
+
             Console.WriteLine();
             Console.WriteLine("UKSH:");
             var ukshMenu = ParseUksh(DateTime.Today);
@@ -143,7 +143,7 @@ namespace MensaScanner
             StringBuilder message = new StringBuilder();
             message.AppendLine("**Mensa**");
             foreach(var menuEntry in mensaMenu)
-                message.AppendLine($"- {menuEntry.Name}    [{menuEntry.Price}]    ({menuEntry.Properties})");
+                message.AppendLine($"- {menuEntry.Name}    [{menuEntry.Price}; {menuEntry.Properties}]");
             message.AppendLine();
             message.AppendLine("**UKSH Bistro**");
             foreach(var menuEntry in ukshMenu)
@@ -326,16 +326,18 @@ namespace MensaScanner
                 // Extract menu entry name
                 string menuEntryName = Regex.Match(dayMenuRowColumns[0].Groups[1].Value, "<strong>(.*?)</strong>", RegexOptions.IgnoreCase | RegexOptions.Singleline).Groups[1].Value.Trim();
                 menuEntryName = Regex.Replace(menuEntryName, "(<small>.*?</small>)|(<br ?/?>)", "", RegexOptions.IgnoreCase);
-                
+
                 // Extract menu properties
-                var menuProperties = Regex.Matches(dayMenuRowColumns[1].Groups[1].Value, "<img src=.*? alt=\"(.*?)\"/>", RegexOptions.IgnoreCase | RegexOptions.Singleline);
-                
+                var menuProperties = Regex.Matches(dayMenuRowColumns[1].Groups[1].Value, "<img src=.*? alt=\"(.*?)\"/?>", RegexOptions.IgnoreCase | RegexOptions.Singleline);
+
                 string menuPropertiesText = "";
-                foreach (Match prop in menuProperties) {
+                foreach(Match prop in menuProperties)
+                {
                     menuPropertiesText = menuPropertiesText + GetPropertyText(prop.Groups[1].Value) + ", ";
                 }
-                menuPropertiesText = menuPropertiesText.Substring(0, menuPropertiesText.Length - 2);
-                
+                if(menuPropertiesText.Length > 2)
+                    menuPropertiesText = menuPropertiesText.Substring(0, menuPropertiesText.Length - 2);
+
                 // Extract menu entry price
                 string menuEntryPrice = dayMenuRowColumns[2].Groups[1].Value.Trim();
 
@@ -343,16 +345,17 @@ namespace MensaScanner
                 yield return new MenuEntry { Name = menuEntryName, Price = menuEntryPrice, Properties = menuPropertiesText };
             }
         }
-        
+
         static string GetPropertyText(string altText)
         {
             string modifiedAltText = altText.Trim();
-            if (modifiedAltText == "") {
+            if(modifiedAltText == "")
+            {
                 modifiedAltText = "Geflügel";
             }
             modifiedAltText = modifiedAltText[0].ToString().ToUpper() + modifiedAltText.Substring(1);
-            
-            return modifiedAltText;            
+
+            return modifiedAltText;
         }
 
         static Dictionary<string, string> ReadConfig()
