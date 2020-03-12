@@ -31,7 +31,7 @@ namespace MensaScanner
         /// <summary>
         /// Path of the configuration file.
         /// </summary>
-        static string ConfigFile = @"E:\Visual Studio\Projects\MensaScanner\accesscodes.txt";
+        static string ConfigFile = @"C:\Users\ITS\Daten\VisualStudio\Projects\MensaScanner\accesscodes.txt"; // PI: "accesscodes.txt";
 
         /// <summary>
         /// Culture data for german strings and calender.
@@ -177,8 +177,6 @@ namespace MensaScanner
                     else
                         Console.WriteLine("Posting message failed: " + (int)messagePostResponse.StatusCode);
             }
-
-            Console.ReadLine();
         }
 
         static IEnumerable<MenuEntry> ParseUksh(DateTime date)
@@ -202,10 +200,10 @@ namespace MensaScanner
             string txtFileName = Path.Combine(workDir + $"bistro{week}.txt");
             ProcessStartInfo pdfToTextProcConfig = new ProcessStartInfo
             {
-                FileName = "pdftotext",
+                FileName = "pdftotext", // PI: "/usr/bin/pdftotext"
                 Arguments = $"-layout bistro{week}.pdf bistro{week}.txt",
                 WorkingDirectory = workDir,
-                UseShellExecute = true,
+                UseShellExecute = true, // PI: false
                 RedirectStandardError = false,
                 RedirectStandardInput = false,
                 RedirectStandardOutput = false,
